@@ -1,9 +1,8 @@
 import streamlit as st
 from agno.agent import Agent
 from agno.tools.duckduckgo import DuckDuckGoTools
-from agno.models.anthropic import Claude
+from agno.models.google import Gemini  # 替换 Anthropic 导入
 from agno.tools.newspaper4k import Newspaper4kTools
-from agno.tools import Tool
 import logging
 
 logging.basicConfig(level=logging.DEBUG)
@@ -13,24 +12,24 @@ st.title("AI Startup Trend Analysis Agent 📈")
 st.caption("Get the latest trend analysis and startup opportunities based on your topic of interest in a click!.")
 
 topic = st.text_input("Enter the area of interest for your Startup:")
-anthropic_api_key = st.sidebar.text_input("Enter Anthropic API Key", type="password")
+gemini_api_key = st.sidebar.text_input("Enter Gemini API Key", type="password")  # 修改 API key 输入名称
 
 if st.button("Generate Analysis"):
-    if not anthropic_api_key:
+    if not gemini_api_key:
         st.warning("Please enter the required API key.")
     else:
         with st.spinner("Processing your request..."):
             try:
-                # Initialize Anthropic model
-                anthropic_model = Claude(id ="claude-3-5-sonnet-20240620",api_key=anthropic_api_key)
+                # Initialize Gemini model
+                gemini_model = Gemini(id="gemini-1.5-flash", api_key=gemini_api_key)  # 替换为 Gemini 模型
 
-                # Define News Collector Agent - Duckduckgo_search tool enables an Agent to search the web for information.
+                # Define News Collector Agent
                 search_tool = DuckDuckGoTools(search=True, news=True, fixed_max_results=5)
                 news_collector = Agent(
                     name="News Collector",
                     role="Collects recent news articles on the given topic",
                     tools=[search_tool],
-                    model=anthropic_model,
+                    model=gemini_model,  # 使用 Gemini 模型
                     instructions=["Gather latest articles on the topic"],
                     show_tool_calls=True,
                     markdown=True,
@@ -42,7 +41,7 @@ if st.button("Generate Analysis"):
                     name="Summary Writer",
                     role="Summarizes collected news articles",
                     tools=[news_tool],
-                    model=anthropic_model,
+                    model=gemini_model,  # 使用 Gemini 模型
                     instructions=["Provide concise summaries of the articles"],
                     show_tool_calls=True,
                     markdown=True,
@@ -52,7 +51,7 @@ if st.button("Generate Analysis"):
                 trend_analyzer = Agent(
                     name="Trend Analyzer",
                     role="Analyzes trends from summaries",
-                    model=anthropic_model,
+                    model=gemini_model,  # 使用 Gemini 模型
                     instructions=["Identify emerging trends and startup opportunities"],
                     show_tool_calls=True,
                     markdown=True,
@@ -60,7 +59,9 @@ if st.button("Generate Analysis"):
 
                 # The multi agent Team setup of phidata:
                 agent_team = Agent(
-                    agents=[news_collector, summary_writer, trend_analyzer],
+                    name="Team Coordinator",
+                    role="Coordinates the workflow between agents",
+                    model=gemini_model,
                     instructions=[
                         "First, search DuckDuckGo for recent news articles related to the user's specified topic.",
                         "Then, provide the collected article links to the summary writer.",
@@ -72,6 +73,7 @@ if st.button("Generate Analysis"):
                     show_tool_calls=True,
                     markdown=True,
                 )
+
 
                 # Executing the workflow
                 # Step 1: Collect news

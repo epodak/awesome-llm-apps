@@ -41,13 +41,13 @@ st.markdown("""
 def display_dietary_plan(plan_content):
     with st.expander("📋 Your Personalized Dietary Plan", expanded=True):
         col1, col2 = st.columns([2, 1])
-        
+
         with col1:
             st.markdown("### 🎯 Why this plan works")
             st.info(plan_content.get("why_this_plan_works", "Information not available"))
             st.markdown("### 🍽️ Meal Plan")
             st.write(plan_content.get("meal_plan", "Plan not available"))
-        
+
         with col2:
             st.markdown("### ⚠️ Important Considerations")
             considerations = plan_content.get("important_considerations", "").split('\n')
@@ -58,13 +58,13 @@ def display_dietary_plan(plan_content):
 def display_fitness_plan(plan_content):
     with st.expander("💪 Your Personalized Fitness Plan", expanded=True):
         col1, col2 = st.columns([2, 1])
-        
+
         with col1:
             st.markdown("### 🎯 Goals")
             st.success(plan_content.get("goals", "Goals not specified"))
             st.markdown("### 🏋️‍♂️ Exercise Routine")
             st.write(plan_content.get("routine", "Routine not available"))
-        
+
         with col2:
             st.markdown("### 💡 Pro Tips")
             tips = plan_content.get("tips", "").split('\n')
@@ -88,19 +88,20 @@ def main():
     """, unsafe_allow_html=True)
 
     with st.sidebar:
-        st.header("🔑 API Configuration")
-        gemini_api_key = st.text_input(
-            "Gemini API Key",
-            type="password",
-            help="Enter your Gemini API key to access the service"
-        )
-        
-        if not gemini_api_key:
-            st.warning("⚠️ Please enter your Gemini API Key to proceed")
-            st.markdown("[Get your API key here](https://aistudio.google.com/apikey)")
-            return
-        
-        st.success("API Key accepted!")
+        api_expander = st.expander("🔑 API Configuration", expanded=False)
+        with api_expander:
+            gemini_api_key = st.text_input(
+                "Gemini API Key",
+                type="password",
+                help="Enter your Gemini API key to access the service"
+            )
+
+            if not gemini_api_key:
+                st.warning("⚠️ Please enter your Gemini API Key to proceed")
+                st.markdown("[Get your API key here](https://aistudio.google.com/apikey)")
+                return
+
+            st.success("API Key accepted!")
 
     if gemini_api_key:
         try:
@@ -110,9 +111,9 @@ def main():
             return
 
         st.header("👤 Your Profile")
-        
+
         col1, col2 = st.columns(2)
-        
+
         with col1:
             age = st.number_input("Age", min_value=10, max_value=100, step=1, help="Enter your age")
             height = st.number_input("Height (cm)", min_value=100.0, max_value=250.0, step=0.1)
